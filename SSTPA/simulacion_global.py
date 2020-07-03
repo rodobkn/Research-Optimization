@@ -2,7 +2,7 @@
 """
 Created on Mon Jun 29 17:39:20 2020
 
-@author: pvcor
+@author: pvcor and rodobkn
 """
 
 import codigo_matematico
@@ -21,6 +21,7 @@ pagina_equipos.to_excel(writer,'Equipos', index=False)
 df.to_excel(writer,'Resultados', index=False)
 writer.save()
 
+
 N = int(input("Ingrese el numero de simulaciones de torneo a realizar: "))
 
 booleano = True
@@ -37,6 +38,10 @@ while booleano == True:
         booleano = False
     else: 
         lista_fechas.append(n)
+
+primera_fecha = lista_fechas[0]
+
+diccionario_tabla_comparacion_final = data_simulacion.setear_headers(primera_fecha)
 
 def ordenamiento_formato():
     global lista_fechas
@@ -628,7 +633,14 @@ for i in range(N):
                 diccionario_final["FECHA 30"].append(diccionario_equipos[clave][14][4])
             
             
-            atractivo = 0
+            puntaje_total = 0
+            cant_partidos_ascenso_descenso = 0
+            punt_ascenso_descenso = 0
+            cant_partidos_ascenso = 0
+            punt_ascenso = 0
+            cant_partidos_descenso = 0
+            punt_descenso = 0
+
             for key in diccionario_final:
                 
                 if key == 'NOMBRE EQUIPO':
@@ -639,19 +651,25 @@ for i in range(N):
                         
                         if color == 'verde':
                             
-                            atractivo += 2
+                            puntaje_total += 2
+                            cant_partidos_ascenso_descenso += 1
+                            punt_ascenso_descenso += 2
                         
                         elif color == 'amarillo':
                             
-                            atractivo += 1
+                            puntaje_total += 1
+                            cant_partidos_descenso += 1
+                            punt_descenso += 1
                         
                         elif color == 'azul':
                             
-                            atractivo += 1.5
+                            puntaje_total += 1.5
+                            cant_partidos_ascenso += 1
+                            punt_ascenso += 1.5
                             
                         elif color == 'rojo':
                             
-                            atractivo += 0
+                            puntaje_total += 0
         
             if indicador_maximo_atractivo == True:
                 
@@ -668,7 +686,7 @@ for i in range(N):
     
                 writer.save()
             
-            return atractivo
+            return [puntaje_total, cant_partidos_ascenso_descenso, punt_ascenso_descenso, cant_partidos_ascenso, punt_ascenso, cant_partidos_descenso, punt_descenso]
     
     
     torneo_2019 = Torneo()
@@ -746,10 +764,12 @@ for i in range(N):
                 Max = max(lista_atractivo_real)
             
             current_atractivo = torneo_2019.generar_datos_visualizacion(False)
+            #current_atractivo es la lista de abajo
+            #[puntaje_total, cant_partidos_ascenso_descenso, punt_ascenso_descenso, cant_partidos_ascenso, punt_ascenso, cant_partidos_descenso, punt_descenso]
             
-            lista_atractivo_real.append(current_atractivo)
+            lista_atractivo_real.append(current_atractivo[0])
             
-            if current_atractivo > Max:
+            if current_atractivo[0] > Max:
                 torneo_2019.generar_datos_visualizacion(True)
                 df = pd.read_excel('Datos.xlsx', "Resultados")
                 pagina_equipos = pd.read_excel('Datos.xlsx', "Equipos")
@@ -757,6 +777,22 @@ for i in range(N):
                 pagina_equipos.to_excel(writer,'Equipos', index=False)
                 df.to_excel(writer,'Resultados', index=False)
                 writer.save()
+
+            contador_nitido = 0
+            for key in diccionario_tabla_comparacion_final:
+
+                if len(key) > 7:
+
+                    diccionario_tabla_comparacion_final[key].append(current_atractivo[contador_nitido])
+                    contador_nitido += 1
+
+                    
+                else:
+
+                    fecha_partido = data_simulacion.encontrar_fecha_del_partido(key)
+                    diccionario_tabla_comparacion_final[key].append(fecha_partido)
+
+
     
         else:
     
@@ -832,6 +868,9 @@ for i in range(N):
     'SL' : [],
     'EV' : []
         }
+
+df_tabla_comparacion_final = pd.DataFrame(diccionario_tabla_comparacion_final)
+df_tabla_comparacion_final.to_excel ('tabla_comparacion_final.xlsx')
 
 print(lista_atractivo_real)
 atractivo_promedio = np.sum(np.array(lista_atractivo_real))/N

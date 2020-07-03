@@ -213,6 +213,67 @@ def asignacion_resultados(fixture): #asigna los resultados reales a un fixture d
     return resultados_fixture_nuevo
 
 
+def setear_headers(primera_fecha):   #excel de colores luego de las iteraciones
+    terminar = False
+    df = pd.read_excel('Datos_originales.xlsx', sheet_name='Resultados')
+    lista_partidos = []
+
+    for i in df.index:
+
+        if terminar == True:
+
+            break
+
+        if (i % 9 == 0):
+
+            if int(df['Jornada'][i]) < primera_fecha:
+
+                terminar = True
+
+        else:
+            local_team = str(df['Local'][i]).replace(u'\xa0', u'')
+            visit_team = str(df['Visita'][i]).replace(u'\xa0', u'')
+            final_string = local_team + "-" + visit_team
+            lista_partidos.append(final_string)
+
+
+    lista_headers_estaticos = ["Puntaje Total", "Cantidad partidos ascenso-descenso", "Puntaje ascenso-descenso", "Cantidad partidos sólo ascenso",
+                                "Puntaje ascenso", "Cantidad partidos sólo descenso", "Puntaje descenso"]
+
+    headers = lista_headers_estaticos + lista_partidos
+
+    diccionario = {}
+
+    for header in headers:
+
+        diccionario[header] = []
+
+
+    return diccionario
+
+def encontrar_fecha_del_partido(string_partido):
+
+    df = pd.read_excel('Datos.xlsx', sheet_name='Resultados')
+    fecha = None
+
+    for i in df.index:
+
+        if (i % 9 == 0):
+
+            fecha = int(df['Jornada'][i])
+
+        else:
+
+            local_team = str(df['Local'][i]).replace(u'\xa0', u'')
+            visit_team = str(df['Visita'][i]).replace(u'\xa0', u'')
+            final_string = local_team + "-" + visit_team
+
+            if final_string == string_partido:
+
+                return fecha
+
+
+
 ######### excel de colores ########
 info_equipos_torneo_estatico(30)  #Te crea el diccionario de equipos, con la info verdadera del torneo, hasta la fecha 30
 ###################################
